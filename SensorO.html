@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+       var poseSensor;
+  
+  try {
+    poseSensor = new RelativeOrientationSensor({ frequency: 60, referenceFrame: 'device' });
+    poseSensor.addEventListener('error', (e) => {
+      if (e && e.error && e.error.message) {
+        document.write(e.error.name);
+        document.write(e.error.message);
+      }
+    });
+    var sensorListener = function(event) {
+      console.log(poseSensor.quaternion);
+    };
+    
+    poseSensor.addEventListener('reading', sensorListener);
+    poseSensor.onreading = function(e) {
+      console.log(e);
+    }
+    Promise.all([navigator.permissions.query({ name: "accelerometer" }),
+             navigator.permissions.query({ name: "gyroscope" })])
+       .then(results => {
+      console.log(results);
+         if (results.every(result => result.state === "granted")) {
+           poseSensor.start();
+           window.setInterval(() => {
+             console.log(poseSensor.quaternion);
+           }, 60);
+         } else {
+           console.log("No permissions to use RelativeOrientationSensor.");
+         }
+   });
+  } catch(e) {
+    document.write(e);
+  }
+  </script>
+</body>
+</html>
